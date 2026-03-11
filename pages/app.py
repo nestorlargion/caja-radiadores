@@ -34,7 +34,7 @@ with st.form("registro_caja"):
         # Combinar y actualizar la planilla
         df_actualizado = pd.concat([df, nueva_fila], ignore_index=True)
         conn.update(data=df_actualizado)
-        st.success("¡Guardado en la nube, culiao!")
+        st.success("¡Guardado en la nube!")
         st.rerun()
 
 # --- RESUMEN ---
