@@ -17,6 +17,7 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 
 # Leer datos actuales
 df = conn.read(ttl=0) # ttl=0 para que no use caché y lea siempre lo último
+df['Fecha'] = pd.to_datetime(df['Fecha'])
 
 with st.form("registro_caja"):
     st.subheader("Cargar Movimiento")
