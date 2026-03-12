@@ -31,7 +31,7 @@ def app_caja_diaria():
         # Si usas st.connection para GSheets:
         conn = st.connection("gsheets", type=GSheetsConnection)
         df = conn.read(worksheet="movimientos",ttl=0)
-        df['Fecha'] = pd.to_datetime(df['Fecha'], errors='coerce')
+        df['fecha'] = pd.to_datetime(df['fecha'], errors='coerce')
 
     except:
         st.error("No se pudo cargar la hoja de movimientos.")
@@ -51,9 +51,9 @@ def app_caja_diaria():
     # 3. Lógica de filtrado
     # Filtramos por el día seleccionado Y que pertenezca al mes/año actual
     df_filtrado = df[
-        (df['Fecha'].dt.day == fecha_seleccionada.day) & 
-        (df['Fecha'].dt.month == fecha_seleccionada.month) &
-        (df['Fecha'].dt.year == fecha_seleccionada.year)
+        (df['fecha'].dt.day == fecha_seleccionada.day) & 
+        (df['fecha'].dt.month == fecha_seleccionada.month) &
+        (df['fecha'].dt.year == fecha_seleccionada.year)
     ]
     
     # 4. Mostrar resultados
