@@ -42,4 +42,8 @@ if not df.empty:
     st.divider()
     total = df["Monto"].sum()
     st.metric("Saldo Actual en Caja", f"$ {total:,.2f}")
-    st.dataframe(df.tail(10), use_container_width=True) # Muestra los últimos 10 movimientos
+    st.dataframe(df.tail(10), use_container_width=True)   # Muestra los últimos 10 movimientos
+
+if st.button("Salir"):
+     st.session_state["conectado"] = False
+     st.rerun()

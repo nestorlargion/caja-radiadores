@@ -49,12 +49,14 @@ def login():
 
 # --- Cuerpo de la Aplicación ---
 def app_principal():
-    st.title(f"Bienvenido/a, {st.session_state['user']}")
-    st.info("Ahora puedes ver el contenido de las otras hojas o procesar datos.")
+ #   st.title(f"Bienvenido/a, {st.session_state['user']}")
+ #   st.info("Ahora puedes ver el contenido de las otras hojas o procesar datos.")
+
+    st.switch_page("pages/caja_diaria.py")
     
-    if st.button("Salir"):
-        st.session_state["conectado"] = False
-        st.rerun()
+ #   if st.button("Salir"):
+ #       st.session_state["conectado"] = False
+ #       st.rerun()
 
 # --- Control de Sesión ---
 if "conectado" not in st.session_state:
