@@ -21,8 +21,8 @@ st.title("🛠️ Sistema de Caja - Radiadores")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 # Leer datos actuales
-df = conn.read(ttl=0) # ttl=0 para que no use caché y lea siempre lo último
-
+df = conn.read(worksheet="movimientos",ttl=0)
+df['fecha'] = pd.to_datetime(df['fecha'], dayfirst=True, errors='coerce')
 
 with st.form("registro_caja"):
     st.subheader("Cargar Movimiento")
@@ -45,7 +45,6 @@ with st.form("registro_caja"):
         
         # Combinar y actualizar la planilla
         df_actualizado = pd.concat([df, nueva_fila], ignore_index=True)
-        df_actualizado['Fecha'] = pd.to_datetime(df_actualizado['Fecha'])
         conn.update(data=df_actualizado)
         st.success(f"¡Guardado en la nube!")
         st.rerun()
