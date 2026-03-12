@@ -2,6 +2,11 @@ import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 from datetime import datetime
+import pytz
+
+# --- Configuración de Zona Horaria (Córdoba) ---
+zona_horaria = pytz.timezone('America/Argentina/Cordoba')
+fecha_hoy_ar = datetime.now(zona_horaria).date()
 
 # Seguridad: Si no pasó por el login, lo regresamos al archivo principal
 if "conectado" not in st.session_state or not st.session_state["conectado"]:
@@ -21,7 +26,7 @@ df = conn.read(ttl=0) # ttl=0 para que no use caché y lea siempre lo último
 
 with st.form("registro_caja"):
     st.subheader("Cargar Movimiento")
-    fecha = st.date_input("Fecha", datetime.now())
+    fecha = st.date_input("Fecha", fecha_hoy_ar)
     concepto = st.text_input("Concepto (Ej: Radiador Peugeot 208)")
     tipo = st.selectbox("Tipo", ["Ingreso", "Egreso"])
     medio = st.selectbox("Medio", ["Efectivo", "Transferencia", "Tarjeta", "Echeq"])
@@ -31,7 +36,7 @@ with st.form("registro_caja"):
         # Preparar la nueva fila
         monto_final = monto if tipo == "Ingreso" else -monto
         nueva_fila = pd.DataFrame([{
-            "Fecha": str(fecha),
+            "Fecha": fecha,
             "Concepto": concepto,
             "Tipo": tipo,
             "Medio": medio,

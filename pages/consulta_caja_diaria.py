@@ -2,6 +2,11 @@ import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 from datetime import datetime
+import pytz
+
+# --- Configuración de Zona Horaria (Córdoba) ---
+zona_horaria = pytz.timezone('America/Argentina/Cordoba')
+
 
 # Seguridad: Si no pasó por el login, lo regresamos al archivo principal
 if "conectado" not in st.session_state or not st.session_state["conectado"]:
@@ -33,7 +38,7 @@ def app_caja_diaria():
         return
 
     # 2. Selector de fecha (Por defecto: hoy)
-    fecha_hoy = datetime.now().date()
+    fecha_hoy = datetime.now(zona_horaria).date()
     
     st.subheader("Seleccionar Fecha")
     fecha_seleccionada = st.date_input(
