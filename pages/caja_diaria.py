@@ -3,6 +3,12 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 from datetime import datetime
 
+# Seguridad: Si no pasó por el login, lo regresamos al archivo principal
+if "conectado" not in st.session_state or not st.session_state["conectado"]:
+    st.warning("Por favor, inicia sesión primero.")
+    st.switch_page("app.py") # Nombre de tu archivo principal
+    st.stop()
+
 st.set_page_config(page_title="Caja Radiadores CBA", layout="centered")
 st.title("🛠️ Sistema de Caja - Radiadores")
 

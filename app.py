@@ -59,6 +59,8 @@ def app_principal():
  #       st.rerun()
 
 # --- Control de Sesión ---
+st.set_page_config(initial_sidebar_state="collapsed")
+
 if "conectado" not in st.session_state:
     st.session_state["conectado"] = False
 
