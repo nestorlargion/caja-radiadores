@@ -50,7 +50,7 @@ def app_caja_diaria():
     # 3. Lógica de filtrado
     # Filtramos por el día seleccionado Y que pertenezca al mes/año actual
     df_filtrado = df[
-        (df['Fecha'].dt.day == fecha_seleccionada.day) & 
+        (df['Fecha'].dt.date == fecha_seleccionada) & 
         (df['Fecha'].dt.month == fecha_hoy.month) &
         (df['Fecha'].dt.year == fecha_hoy.year)
     ]
