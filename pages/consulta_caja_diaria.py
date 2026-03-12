@@ -73,8 +73,8 @@ def app_caja_diaria():
         st.dataframe(df_filtrado, use_container_width=True)
  
         # Totales rápidos
-        total_ingresos = df_filtrado[df_filtrado['Tipo'] == 'Ingreso']['Monto'].sum()
-        total_egresos = df_filtrado[df_filtrado['Tipo'] == 'Egreso']['Monto'].sum()
+        total_ingresos = df_filtrado[df_filtrado['tipo'] == 'Ingreso']['Monto'].sum()
+        total_egresos = df_filtrado[df_filtrado['tipo'] == 'Egreso']['Monto'].sum()
         
         col1, col2, col3 = st.columns(3)
         col1.metric("Ingresos", f"$ {total_ingresos:,.2f}")
