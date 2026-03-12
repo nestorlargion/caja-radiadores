@@ -46,9 +46,20 @@ with st.form("registro_caja"):
 # --- RESUMEN ---
 if not df.empty:
     st.divider()
-    total = df["Monto"].sum()
+    # 2. Selector de fecha (Por defecto: hoy)
+    fecha_hoy = datetime.now().date()
+
+    # 3. Lógica de filtrado
+    # Filtramos por el día seleccionado Y que pertenezca al mes/año actual
+    df_filtrado = df[
+        (df['Fecha'].dt.date == fecha_hoy) & 
+        (df['Fecha'].dt.month == fecha_hoy.month) &
+        (df['Fecha'].dt.year == fecha_hoy.year)
+    ]
+
+    total = df_filtrado["Monto"].sum()
     st.metric("Saldo Actual en Caja", f"$ {total:,.2f}")
-    st.dataframe(df.tail(10), use_container_width=True)   # Muestra los últimos 10 movimientos
+    st.dataframe(df_filtrado, use_container_width=True)   # Muestra movimientos
 
 if st.button("Salir"):
      st.session_state["conectado"] = False
