@@ -45,6 +45,7 @@ with st.form("registro_caja"):
         
         # Combinar y actualizar la planilla
         df_actualizado = pd.concat([df, nueva_fila], ignore_index=True)
+        df_actualizado['Fecha'] = pd.to_datetime(df_actualizado['Fecha'])
         conn.update(data=df_actualizado)
         st.success("¡Guardado en la nube!")
         st.rerun()
