@@ -43,7 +43,8 @@ if not df_filtrado.empty:
     st.success(f"¡Se encontraron {len(df_filtrado)} registros!")
     # Mostramos solo las columnas originales
     columnas_originales = [c for c in df.columns if c not in ['fecha_limpia', 'fecha_texto_comparar']]
-    st.dataframe(df_filtrado[columnas_originales], use_container_width=True)
+    #st.dataframe(df_filtrado[columnas_originales], use_container_width=True)
+    st.dataframe(df_filtrado, use_container_width=True)
 else:
     st.warning("No se encontró nada con el filtro.")
     
