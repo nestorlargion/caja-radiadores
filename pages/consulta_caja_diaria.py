@@ -41,19 +41,21 @@ def app_caja_diaria():
     fecha_hoy = datetime.now(zona_horaria).date()
     
     st.subheader("Seleccionar Fecha")
-    fecha_seleccionada = st.date_input(
-        "Ver movimientos del día:",
-        value=fecha_hoy
-        ,format="DD/MM/YYYY"
-    )
+    #fecha_seleccionada = st.date_input(
+    #    "Ver movimientos del día:",
+    #    value=fecha_hoy
+    #    ,format="DD/MM/YYYY"
+    #)
+    fecha_seleccionada = st.date_input( "Ver movimientos del día:")
 
     # 3. Lógica de filtrado
     # Filtramos por el día seleccionado Y que pertenezca al mes/año actual
-    df_filtrado = df[
-        (df['Fecha'] == fecha_seleccionada) & 
-        (df['Fecha'].dt.month == fecha_hoy.month) &
-        (df['Fecha'].dt.year == fecha_hoy.year)
-    ]
+    #df_filtrado = df[
+    #    (df['Fecha'] == fecha_seleccionada) & 
+    #    (df['Fecha'].dt.month == fecha_hoy.month) &
+    #    (df['Fecha'].dt.year == fecha_hoy.year)
+    #]
+    df_filtrado = df.loc[df['Fecha'] == fecha_seleccionada]
 
     # 4. Mostrar resultados
     st.divider()
