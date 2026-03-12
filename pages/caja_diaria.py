@@ -22,7 +22,7 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 
 # Leer datos actuales
 df = conn.read(worksheet="movimientos",ttl=0)
-df['fecha'] = pd.to_datetime(df['fecha'], dayfirst=True, errors='coerce')
+#df['fecha'] = pd.to_datetime(df['fecha'], dayfirst=True, errors='coerce')
 
 with st.form("registro_caja"):
     st.subheader("Cargar Movimiento")
