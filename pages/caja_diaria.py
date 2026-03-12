@@ -17,7 +17,7 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 
 # Leer datos actuales
 df = conn.read(ttl=0) # ttl=0 para que no use caché y lea siempre lo último
-df['Fecha'] = pd.to_datetime(df['Fecha'])
+
 
 with st.form("registro_caja"):
     st.subheader("Cargar Movimiento")
@@ -43,24 +43,6 @@ with st.form("registro_caja"):
         conn.update(data=df_actualizado)
         st.success("¡Guardado en la nube!")
         st.rerun()
-
-# --- RESUMEN ---
-if not df.empty:
-    st.divider()
-    # 2. Selector de fecha (Por defecto: hoy)
-    fecha_hoy = datetime.now().date()
-
-    # 3. Lógica de filtrado
-    # Filtramos por el día seleccionado Y que pertenezca al mes/año actual
-    df_filtrado = df[
-        (df['Fecha'].dt.date == fecha_hoy) & 
-        (df['Fecha'].dt.month == fecha_hoy.month) &
-        (df['Fecha'].dt.year == fecha_hoy.year)
-    ]
-
-    total = df_filtrado["Monto"].sum()
-    st.metric("Saldo Actual en Caja", f"$ {total:,.2f}")
-    st.dataframe(df_filtrado, use_container_width=True)   # Muestra movimientos
 
 if st.button("Salir"):
      st.session_state["conectado"] = False
