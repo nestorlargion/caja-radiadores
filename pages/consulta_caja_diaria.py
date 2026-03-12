@@ -31,7 +31,7 @@ def app_caja_diaria():
         # Si usas st.connection para GSheets:
         conn = st.connection("gsheets", type=GSheetsConnection)
         df = conn.read(worksheet="movimientos",ttl=0)
-        df['Fecha'] = pd.to_datetime(df['Fecha'])
+        #df['Fecha'] = pd.to_datetime(df['Fecha'])
 
     except:
         st.error("No se pudo cargar la hoja de movimientos.")
