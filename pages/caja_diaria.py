@@ -36,7 +36,7 @@ with st.form("registro_caja"):
         # Preparar la nueva fila
         monto_final = monto if tipo == "Ingreso" else -monto
         nueva_fila = pd.DataFrame([{
-            "Fecha": fecha,
+            "Fecha": fecha.strftime('%d/%m/%Y'),
             "Concepto": concepto,
             "Tipo": tipo,
             "Medio": medio,
