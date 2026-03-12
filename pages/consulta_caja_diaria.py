@@ -31,7 +31,17 @@ def app_caja_diaria():
         # Si usas st.connection para GSheets:
         conn = st.connection("gsheets", type=GSheetsConnection)
         df = conn.read(worksheet="movimientos",ttl=0)
-        df['fecha'] = pd.to_datetime(df['fecha'], errors='coerce')
+        df.columns = [str(c).strip().lower() for c in df.columns]
+
+        if 'fecha' in df.columns:
+            # Convertimos y lo que no sea fecha lo transformamos en NaT (vacío)
+            df['fecha_limpia'] = pd.to_datetime(df['fecha'], dayfirst=True, errors='coerce')
+            
+            # Eliminamos las filas que no tengan fecha válida
+            df = df.dropna(subset=['fecha_limpia'])
+        else:
+            st.error(f"No encontré la columna 'fecha'. Las columnas disponibles son: {list(df.columns)}")
+            st.stop()
 
     except:
         st.error("No se pudo cargar la hoja de movimientos.")
@@ -48,13 +58,11 @@ def app_caja_diaria():
     #)
     fecha_seleccionada = st.date_input("Ver movimientos del día:",value=datetime.now())
 
-    # 3. Lógica de filtrado
-    # Filtramos por el día seleccionado Y que pertenezca al mes/año actual
-    df_filtrado = df[
-        (df['fecha'].dt.day == fecha_seleccionada.day) & 
-        (df['fecha'].dt.month == fecha_seleccionada.month) &
-        (df['fecha'].dt.year == fecha_seleccionada.year)
-    ]
+    # Filtramos usando strings formateados (esto es infalible porque compara texto simple)
+    fecha_texto_buscada = fecha_seleccionada.strftime('%Y-%m-%d')
+    df['fecha_texto_comparar'] = df['fecha_limpia'].dt.strftime('%Y-%m-%d')
+
+    df_filtrado = df[df['fecha_texto_comparar'] == fecha_texto_buscada]
     
     # 4. Mostrar resultados
     st.divider()
