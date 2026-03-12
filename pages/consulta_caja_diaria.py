@@ -43,8 +43,8 @@ def app_caja_diaria():
     st.subheader("Seleccionar Fecha")
     fecha_seleccionada = st.date_input(
         "Ver movimientos del día:",
-        value=fecha_hoy,
-        format="DD/MM/YYYY"
+        value=fecha_hoy
+        #,format="DD/MM/YYYY"
     )
 
     # 3. Lógica de filtrado
