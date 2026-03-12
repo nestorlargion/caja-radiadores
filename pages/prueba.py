@@ -17,9 +17,9 @@ df.columns = [str(c).strip().lower() for c in df.columns]
 
 # --- PASO 2: CONVERSIÓN FORZADA ---
 # Intentamos convertir la columna que se llame 'fecha' (ahora en minúscula)
-if 'Fecha' in df.columns:
+if 'fecha' in df.columns:
     # Convertimos y lo que no sea fecha lo transformamos en NaT (vacío)
-    df['fecha_limpia'] = pd.to_datetime(df['Fecha'], dayfirst=True, errors='coerce')
+    df['fecha_limpia'] = pd.to_datetime(df['fecha'], dayfirst=True, errors='coerce')
     
     # Eliminamos las filas que no tengan fecha válida
     df = df.dropna(subset=['fecha_limpia'])
