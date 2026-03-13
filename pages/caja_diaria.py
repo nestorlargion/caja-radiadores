@@ -3,7 +3,7 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 from datetime import datetime
 import pytz
-
+import time
 # --- Configuración de Zona Horaria (Córdoba) ---
 zona_horaria = pytz.timezone('America/Argentina/Cordoba')
 fecha_hoy_ar = datetime.now(zona_horaria).date()
@@ -46,9 +46,10 @@ with st.form("registro_caja", clear_on_submit=True):
         # Combinar y actualizar la planilla
         df_actualizado = pd.concat([df, nueva_fila], ignore_index=True)
         conn.update(data=df_actualizado)
-        #st.success(f"¡Guardado en la nube!")
-        st.toast("¡Guardado en la nube!", icon="☁️")
-        st.rerun()
+        st.success(f"¡Guardado en la nube!")
+        time.sleep(3)
+        #st.toast("¡Guardado en la nube!", icon="☁️")
+        #st.rerun()
 
 if st.button("Salir"):
      st.session_state["conectado"] = False
