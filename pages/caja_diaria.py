@@ -46,7 +46,8 @@ with st.form("registro_caja", clear_on_submit=True):
         # Combinar y actualizar la planilla
         df_actualizado = pd.concat([df, nueva_fila], ignore_index=True)
         conn.update(data=df_actualizado)
-        st.success(f"¡Guardado en la nube!")
+        #st.success(f"¡Guardado en la nube!")
+        st.toast("¡Guardado en la nube!", icon="☁️")
         st.rerun()
 
 if st.button("Salir"):
