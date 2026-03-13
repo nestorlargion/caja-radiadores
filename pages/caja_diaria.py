@@ -24,7 +24,7 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 df = conn.read(worksheet="movimientos",ttl=0)
 #df['fecha'] = pd.to_datetime(df['fecha'], dayfirst=True, errors='coerce')
 
-with st.form("registro_caja"):
+with st.form("registro_caja", clear_on_submit=True):
     st.subheader("Cargar Movimiento")
     fecha = st.date_input("Fecha", fecha_hoy_ar)
     concepto = st.text_input("Concepto (Ej: Radiador Peugeot 208)")
