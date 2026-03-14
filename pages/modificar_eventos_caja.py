@@ -11,7 +11,7 @@ if "conectado" not in st.session_state or not st.session_state["conectado"]:
     st.warning("Por favor, inicia sesión primero.")
     st.switch_page("app.py") # Nombre de tu archivo principal
     st.stop()
-    
+
 # 1. Configuración de la conexión
 conn = st.connection("gsheets", type=GSheetsConnection)
 
@@ -33,10 +33,10 @@ df_editado = st.data_editor(
     df_original, 
     num_rows="fixed", # Bloquea la opción de añadir nuevas filas
     use_container_width=True,
-    disabled=["Fecha", "codigo radiador"], # Bloquea la edición de estas columnas
+    disabled=["Fecha", "Codigo"], # Bloquea la edición de estas columnas
     column_config={
         "Fecha": st.column_config.DateColumn("Fecha"),
-        "codigo radiador": st.column_config.TextColumn("Código Radiador"),
+        "Codigo": st.column_config.TextColumn("Código Radiador"),
         "TipoMontoMedio": st.column_config.SelectboxColumn(
             "Tipo Monto", 
             options=["Efectivo", "Transferencia", "Tarjeta", "Otros"]
