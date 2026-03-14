@@ -27,6 +27,7 @@ df = conn.read(worksheet="movimientos",ttl=0)
 with st.form("registro_caja", clear_on_submit=True):
     st.subheader("Cargar Movimiento")
     fecha = st.date_input("Fecha", fecha_hoy_ar)
+    codigo = st.text_input("Codigo Radiador")
     concepto = st.text_input("Concepto (Ej: Radiador Peugeot 208)")
     tipo = st.selectbox("Tipo", ["Ingreso", "Egreso"])
     medio = st.selectbox("Medio", ["Efectivo", "Transferencia", "Tarjeta", "Echeq"])
@@ -37,6 +38,7 @@ with st.form("registro_caja", clear_on_submit=True):
         monto_final = monto if tipo == "Ingreso" else -monto
         nueva_fila = pd.DataFrame([{
             "Fecha": fecha.strftime('%d/%m/%Y'),
+            "Codigo": codigo,
             "Concepto": concepto,
             "Tipo": tipo,
             "Medio": medio,
