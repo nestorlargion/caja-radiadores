@@ -11,8 +11,8 @@ try:
     conn = st.connection(
         "supabase",
         type=SupabaseConnection,
-        url=URL_PROYECTO,
-        key=KEY_PROYECTO
+        url=st.secrets["connections"]["supabase"]["url"],
+        key=st.secrets["connections"]["supabase"]["key"],
     )
     st.success("¡Conexión establecida manualmente!")
 except Exception as e:
