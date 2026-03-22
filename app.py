@@ -5,7 +5,13 @@ from st_supabase_connection import SupabaseConnection
 st.set_page_config(page_title="Login Radiadores", page_icon="🔒", initial_sidebar_state="collapsed")
 
 # 2. Conexión (Usa los secretos que ya detectó)
-conn = st.connection("supabase", type=SupabaseConnection)
+#conn = st.connection("supabase", type=SupabaseConnection)
+conn = st.connection(
+    "supabase",
+    type=SupabaseConnection,
+    url=st.secrets["connections"]["supabase"]["https://resbthzvttorxktyeopx.supabase.co"],
+    key=st.secrets["connections"]["supabase"]["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlc2J0aHp2dHRvcnhrdHllb3B4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNzUwMzUsImV4cCI6MjA4OTc1MTAzNX0.YhXag2IHDVaRw5UrT1FgI136_WruASSZis14RGCtp18"]
+)
 
 def validar_usuario(user, password):
     try:
