@@ -1,6 +1,17 @@
 import streamlit as st
 from st_supabase_connection import SupabaseConnection
 
+# Prueba de diagnóstico
+if "connections" not in st.secrets:
+    st.error("⚠️ Streamlit NO está leyendo la sección [connections]. Revisá el formato en la web.")
+elif "supabase" not in st.secrets.connections:
+    st.error("⚠️ Se detectó [connections] pero NO la subsección [supabase].")
+else:
+    st.success("✅ Secretos detectados correctamente.")
+    # Esto te dirá si la URL está vacía
+    url_detectada = st.secrets.connections.supabase.get("url")
+    st.write(f"URL cargada: {url_detectada[:15]}...")
+
 # --- Configuración de Página (Debe ir al principio del script) ---
 st.set_page_config(page_title="Login", page_icon="🔒", initial_sidebar_state="collapsed")
 
