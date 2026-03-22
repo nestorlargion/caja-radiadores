@@ -1,75 +1,50 @@
 import streamlit as st
 from st_supabase_connection import SupabaseConnection
 
-# Prueba de diagnóstico
-if "connections" not in st.secrets:
-    st.error("⚠️ Streamlit NO está leyendo la sección [connections]. Revisá el formato en la web.")
-elif "supabase" not in st.secrets.connections:
-    st.error("⚠️ Se detectó [connections] pero NO la subsección [supabase].")
-else:
-    st.success("✅ Secretos detectados correctamente.")
-    # Esto te dirá si la URL está vacía
-    url_detectada = st.secrets.connections.supabase.get("url")
-    st.write(f"URL cargada: {url_detectada[:15]}...")
+# 1. Configuración de página
+st.set_page_config(page_title="Login Radiadores", page_icon="🔒", initial_sidebar_state="collapsed")
 
-# --- Configuración de Página (Debe ir al principio del script) ---
-st.set_page_config(page_title="Login", page_icon="🔒", initial_sidebar_state="collapsed")
-
-# 1. Conexión a Supabase
-# Asegúrate de tener url y key en .streamlit/secrets.toml
+# 2. Conexión (Usa los secretos que ya detectó)
 conn = st.connection("supabase", type=SupabaseConnection)
 
-def cargar_usuarios():
+def validar_usuario(user, password):
     try:
-        # Consultamos la tabla 'usuarios' que creamos en Supabase
-        # Seleccionamos solo las columnas necesarias para validar
-        res = conn.query("usuario, password", table="usuarios", ttl=0).execute()
+        # Buscamos el usuario en la tabla de Supabase
+        res = conn.table("usuarios").select("*").eq("usuario", user).eq("password", password).execute()
         
-        if res.data:
-            # Creamos el diccionario {usuario: password}
-            credenciales = {str(row['usuario']): str(row['password']) for row in res.data}
-            return credenciales
-        return {}
+        # Si devuelve datos, es que el usuario y contraseña coinciden
+        return len(res.data) > 0
     except Exception as e:
-        st.error(f"❌ Error al conectar con Supabase: {e}")
-        return {}
+        st.error(f"Error al consultar la base de datos: {e}")
+        return False
 
-# --- Lógica de Login ---
-def login():
-    st.title("Sistemas Internos - Acceso")
-    
-    # Intentamos cargar usuarios de la DB
-    credenciales = cargar_usuarios()
-
-    if not credenciales:
-        st.warning("No se pudo cargar la base de datos de usuarios.")
-        return
-
-    with st.form("formulario_login"):
-        user_input = st.text_input("Nombre de Usuario")
-        pass_input = st.text_input("Contraseña", type="password")
-        boton_entrar = st.form_submit_button("Ingresar")
-
-        if boton_entrar:
-            # Validación de credenciales
-            if user_input in credenciales and credenciales[user_input] == str(pass_input):
-                st.session_state["conectado"] = True
-                st.session_state["user"] = user_input
-                st.success("¡Ingreso exitoso!")
-                st.rerun()
-            else:
-                st.error("Usuario o contraseña incorrectos.")
-
-# --- Cuerpo de la Aplicación ---
-def app_principal():
-    # Redirigir a la página de caja diaria tras el login exitoso
-    st.switch_page("pages/caja_diaria.py")
-
-# --- Control de Sesión ---
+# --- Interfaz de Login ---
 if "conectado" not in st.session_state:
     st.session_state["conectado"] = False
 
-if st.session_state["conectado"]:
-    app_principal()
+if not st.session_state["conectado"]:
+    st.title("Sistema de Caja Diaria")
+    st.subheader("Control de Ventas de Radiadores")
+    
+    with st.form("login_form"):
+        u = st.text_input("Usuario")
+        p = st.text_input("Contraseña", type="password")
+        btn = st.form_submit_button("Entrar")
+        
+        if btn:
+            if validar_usuario(u, p):
+                st.session_state["conectado"] = True
+                st.session_state["user"] = u
+                st.success("¡Bienvenido!")
+                st.rerun()
+            else:
+                st.error("Usuario o contraseña incorrectos")
 else:
-    login()
+    # Si ya está conectado, lo mandamos a la página de la caja
+    st.write(f"Conectado como: **{st.session_state['user']}**")
+    if st.button("Ir a Caja Diaria"):
+        st.switch_page("pages/caja_diaria.py")
+    
+    if st.button("Cerrar Sesión"):
+        st.session_state["conectado"] = False
+        st.rerun()
