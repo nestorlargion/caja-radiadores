@@ -51,3 +51,10 @@ with st.form("form_carga_vertical", clear_on_submit=True):
 # Botón rápido para ir a ver lo cargado
 if st.button("🔍 Ir a Consulta de Hoy"):
     st.switch_page("pages/2_Consulta_Historial.py")
+
+# --- SIDEBAR ---
+with st.sidebar:
+    st.write(f"Usuario: **{st.session_state.get('user', 'Admin')}**")
+    if st.button("Cerrar Sesión"):
+        st.session_state["conectado"] = False
+        st.switch_page("app.py")
