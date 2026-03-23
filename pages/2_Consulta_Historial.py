@@ -85,26 +85,30 @@ else:
     # --- 6. BOTÓN DE GUARDADO ---
     if st.button("💾 Guardar Cambios", use_container_width=True):
         try:
-            # Separamos los que se quedan de los que se van
+            # Separamos los que se van de los que se quedan
             ids_a_borrar = df_editado[df_editado["Eliminar"] == True]["id"].tolist()
             filas_a_guardar = df_editado[df_editado["Eliminar"] == False].drop(columns=["Eliminar"])
 
-            # A. Borramos en Supabase
+            # A. Borramos en Supabase (solo si hay IDs seleccionados)
             if ids_a_borrar:
                 conn.table("movimientos").delete().in_("id", ids_a_borrar).execute()
+                st.toast(f"Eliminados {len(ids_a_borrar)} registros", icon="🗑️")
             
-            # B. Actualizamos (Upsert)
-            datos_upsert = filas_a_guardar.to_dict(orient="records")
-            for d in datos_upsert:
-                d['fecha'] = str(d['fecha']) # Formato texto para DB
+            # B. Actualizamos (Upsert) - SOLO SI HAY FILAS
+            if not filas_a_guardar.empty:
+                datos_upsert = filas_a_guardar.to_dict(orient="records")
+                for d in datos_upsert:
+                    d['fecha'] = str(d['fecha']) # Formato texto para DB
+                
+                # Aquí es donde antes fallaba si la lista iba vacía
+                conn.table("movimientos").upsert(datos_upsert).execute()
             
-            conn.table("movimientos").upsert(datos_upsert).execute()
-            
-            st.success("¡Base de datos actualizada correctamente!")
+            st.success("¡Base de datos sincronizada!")
             st.rerun()
             
         except Exception as e:
-            st.error(f"Error al procesar: {e}")
+            # Si el error persiste, mostramos algo más claro
+            st.error(f"Error técnico: {e}")
 
 # --- SIDEBAR ---
 with st.sidebar:
