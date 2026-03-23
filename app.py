@@ -1,56 +1,43 @@
 import streamlit as st
 from st_supabase_connection import SupabaseConnection
 
-# 1. Configuración de página
-st.set_page_config(page_title="Login Radiadores", page_icon="🔒", initial_sidebar_state="collapsed")
+# Configuración inicial
+st.set_page_config(page_title="Login - Radiadores", page_icon="🔒")
 
-# 2. Conexión (Usa los secretos que ya detectó)
-#conn = st.connection("supabase", type=SupabaseConnection)
-conn = st.connection(
+# Conexión infalible a Supabase
+try:
+    conn = st.connection(
         "supabase",
         type=SupabaseConnection,
         url=st.secrets["connections"]["supabase"]["url"],
-        key=st.secrets["connections"]["supabase"]["key"],
+        key=st.secrets["connections"]["supabase"]["key"]
     )
+except Exception as e:
+    st.error("Error de configuración de base de datos.")
+    st.stop()
 
-def validar_usuario(user, password):
+# Redirección automática si ya inició sesión
+if "conectado" in st.session_state and st.session_state["conectado"]:
+    st.switch_page("pages/1_Carga_de_Movimientos.py")
+
+def validar_usuario(u, p):
     try:
-        # Buscamos el usuario en la tabla de Supabase
-        res = conn.table("usuarios").select("*").eq("usuario", user).eq("password", password).execute()
-        
-        # Si devuelve datos, es que el usuario y contraseña coinciden
+        res = conn.table("usuarios").select("*").eq("usuario", u).eq("password", p).execute()
         return len(res.data) > 0
-    except Exception as e:
-        st.error(f"Error al consultar la base de datos: {e}")
+    except:
         return False
 
-# --- Interfaz de Login ---
-if "conectado" not in st.session_state:
-    st.session_state["conectado"] = False
+st.title("🚀 Sistema de Gestión")
+st.subheader("Venta de Radiadores")
 
-if not st.session_state["conectado"]:
-    st.title("Sistema de Caja Diaria")
-    st.subheader("Control de Ventas de Radiadores")
-    
-    with st.form("login_form"):
-        u = st.text_input("Usuario")
-        p = st.text_input("Contraseña", type="password")
-        btn = st.form_submit_button("Entrar")
-        
-        if btn:
-            if validar_usuario(u, p):
-                st.session_state["conectado"] = True
-                st.session_state["user"] = u
-                st.success("¡Bienvenido!")
-                st.rerun()
-            else:
-                st.error("Usuario o contraseña incorrectos")
-else:
-    # Si ya está conectado, lo mandamos a la página de la caja
-    st.write(f"Conectado como: **{st.session_state['user']}**")
-    if st.button("Ir a Caja Diaria"):
-        st.switch_page("pages/caja_diaria.py")
-    
-    if st.button("Cerrar Sesión"):
-        st.session_state["conectado"] = False
-        st.rerun()
+with st.form("login_form"):
+    u = st.text_input("Usuario")
+    p = st.text_input("Contraseña", type="password")
+    if st.form_submit_button("Entrar"):
+        if validar_usuario(u, p):
+            st.session_state["conectado"] = True
+            st.session_state["user"] = u
+            st.success("¡Ingreso exitoso!")
+            st.switch_page("pages/1_Carga_de_Movimientos.py")
+        else:
+            st.error("Credenciales incorrectas")
