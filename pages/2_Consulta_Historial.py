@@ -112,7 +112,7 @@ else:
 
 # --- SIDEBAR ---
 with st.sidebar:
-    st.write(f"Usuario: **{st.session_state.get('user', 'Admin')}**")
+    st.info(f"Usuario: **{st.session_state.get('user', 'Admin')}**")
     if st.button("Cerrar Sesión"):
         st.session_state["conectado"] = False
         st.switch_page("app.py")

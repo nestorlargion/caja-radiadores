@@ -37,3 +37,10 @@ if not df_p.empty:
         upsert_data = ed[ed["Eliminar"] == False].drop(columns=["Eliminar"]).to_dict(orient="records")
         conn.table("proveedores").upsert(upsert_data).execute()
         st.rerun()
+
+# --- SIDEBAR ---
+with st.sidebar:
+    st.info(f"Usuario: **{st.session_state.get('user', 'Admin')}**")
+    if st.button("Cerrar Sesión"):
+        st.session_state["conectado"] = False
+        st.switch_page("app.py")
