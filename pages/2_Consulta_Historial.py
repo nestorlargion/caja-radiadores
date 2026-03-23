@@ -36,36 +36,51 @@ if not df.empty:
     st.dataframe(resumen, use_container_width=True)
 
     # Edición
-    st.write("---")
-    editado = st.data_editor(
-                df, 
-                hide_index=True, 
-                # 'fixed' impide que el usuario vea el botón (+) para agregar filas
-                num_rows="fixed", 
-                # Ponemos en 'disabled' las columnas que no se deben tocar
-                disabled=["id", "fecha"], 
-                use_container_width=True,
-                column_config={
-                    "id": st.column_config.TextColumn("ID", help="No editable"),
-                    "fecha": st.column_config.DateColumn("Fecha", format="DD/MM/YYYY", help="No editable"),
-                    "monto": st.column_config.NumberColumn("Monto", format="$ %.2f"),
-                    "tipo": st.column_config.SelectboxColumn("Tipo", options=["Ingreso", "Egreso"]),
-                    "medio": st.column_config.SelectboxColumn("Medio", options=["Efectivo", "Transferencia", "Tarjeta", "Echeq"])
-                }
-            )
+    st.write("📝 **Para borrar:** Seleccioná la fila desde la izquierda y apretá 'Suprimir' (Delete).")
 
-    if st.button("💾 Guardar Cambios"):
-        ids_a_borrar = list(set(df["id"]) - set(editado["id"].dropna()))
-        if ids_a_borrar: conn.table("movimientos").delete().in_("id", ids_a_borrar).execute()
+    editado = st.data_editor(
+        df, 
+        hide_index=True, 
+        num_rows="fixed", # Bloquea el botón (+) para no agregar registros
+        disabled=["id", "fecha"], # Bloquea edición de ID y Fecha
+        use_container_width=True,
+        key="editor_consulta",
+        column_config={
+            "id": st.column_config.TextColumn("ID"),
+            "fecha": st.column_config.DateColumn("Fecha", format="DD/MM/YYYY"),
+            "codigo": st.column_config.TextColumn("Código"), # Agregamos el código aquí también
+            "monto": st.column_config.NumberColumn("Monto", format="$ %.2f"),
+            "tipo": st.column_config.SelectboxColumn("Tipo", options=["Ingreso", "Egreso"]),
+            "medio": st.column_config.SelectboxColumn("Medio", options=["Efectivo", "Transferencia", "Tarjeta", "Echeq"])
+        }
+    )
+
+# --- LÓGICA DE GUARDADO (BORRADO + EDICIÓN) ---
+if st.button("💾 Guardar Cambios"):
+    try:
+        # 1. Identificar filas borradas
+        # Comparamos los IDs originales contra los que quedaron en el editor
+        ids_originales = set(df["id"].tolist())
+        ids_actuales = set(editado["id"].tolist())
+        ids_a_eliminar = list(ids_originales - ids_actuales)
+
+        # 2. Ejecutar borrado en Supabase
+        if ids_a_eliminar:
+            conn.table("movimientos").delete().in_("id", ids_a_eliminar).execute()
+            st.warning(f"Se eliminaron {len(ids_a_eliminar)} registros.")
+
+        # 3. Ejecutar actualización de los que quedaron (Upsert)
+        datos_actualizar = editado.to_dict(orient="records")
+        for d in datos_actualizar:
+            d['fecha'] = str(d['fecha']) # Asegurar formato fecha para Supabase
         
-        datos = editado.to_dict(orient="records")
-        for d in datos:
-            if pd.isna(d['id']): del d['id']
-            d['fecha'] = str(d['fecha'])
+        conn.table("movimientos").upsert(datos_actualizar).execute()
         
-        conn.table("movimientos").upsert(datos).execute()
-        st.success("Actualizado")
+        st.success("¡Cambios guardados con éxito!")
         st.rerun()
+        
+    except Exception as e:
+        st.error(f"Error al procesar los cambios: {e}")
 else:
     st.info("Sin movimientos hoy.")
 
