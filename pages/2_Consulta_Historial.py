@@ -37,7 +37,22 @@ if not df.empty:
 
     # Edición
     st.write("---")
-    editado = st.data_editor(df, hide_index=True, num_rows="dynamic", disabled=["id"], use_container_width=True)
+    editado = st.data_editor(
+                df, 
+                hide_index=True, 
+                # 'fixed' impide que el usuario vea el botón (+) para agregar filas
+                num_rows="fixed", 
+                # Ponemos en 'disabled' las columnas que no se deben tocar
+                disabled=["id", "fecha"], 
+                use_container_width=True,
+                column_config={
+                    "id": st.column_config.TextColumn("ID", help="No editable"),
+                    "fecha": st.column_config.DateColumn("Fecha", format="DD/MM/YYYY", help="No editable"),
+                    "monto": st.column_config.NumberColumn("Monto", format="$ %.2f"),
+                    "tipo": st.column_config.SelectboxColumn("Tipo", options=["Ingreso", "Egreso"]),
+                    "medio": st.column_config.SelectboxColumn("Medio", options=["Efectivo", "Transferencia", "Tarjeta", "Echeq"])
+                }
+            )
 
     if st.button("💾 Guardar Cambios"):
         ids_a_borrar = list(set(df["id"]) - set(editado["id"].dropna()))
