@@ -2,88 +2,113 @@ import streamlit as st
 from st_supabase_connection import SupabaseConnection
 import pandas as pd
 
-# --- PORTERO AUTOMÁTICO ---
+# --- 1. PORTERO AUTOMÁTICO (SEGURIDAD) ---
 if "conectado" not in st.session_state or not st.session_state["conectado"]:
     st.switch_page("app.py")
 
-conn = st.connection(
-    "supabase",
-    type=SupabaseConnection,
-    url=st.secrets["connections"]["supabase"]["url"],
-    key=st.secrets["connections"]["supabase"]["key"]
-)
+# --- 2. CONEXIÓN A SUPABASE ---
+try:
+    conn = st.connection(
+        "supabase",
+        type=SupabaseConnection,
+        url=st.secrets["connections"]["supabase"]["url"],
+        key=st.secrets["connections"]["supabase"]["key"]
+    )
+except Exception as e:
+    st.error(f"Error de conexión: {e}")
+    st.stop()
 
-st.title("🔍 Consulta y Totales")
+st.title("🔍 Consulta y Cierre de Caja")
 
-f_busqueda = st.date_input("Fecha a consultar:", pd.to_datetime("today"))
-res = conn.table("movimientos").select("*").eq("fecha", str(f_busqueda)).execute()
-df = pd.DataFrame(res.data)
+# --- 3. FILTRO POR FECHA ---
+fecha_busqueda = st.date_input("Seleccioná el día a consultar:", pd.to_datetime("today"))
 
-if not df.empty:
-    # Totales
-    df['monto'] = pd.to_numeric(df['monto'])
-    ing = df[df['tipo'] == 'Ingreso']['monto'].sum()
-    egr = df[df['tipo'] == 'Egreso']['monto'].sum()
+# Función para traer datos frescos
+def obtener_datos(f):
+    res = conn.table("movimientos").select("*").eq("fecha", str(f)).execute()
+    return pd.DataFrame(res.data)
+
+df_dia = obtener_datos(fecha_busqueda)
+
+if df_dia.empty:
+    st.info(f"No hay movimientos registrados para el día {fecha_busqueda.strftime('%d/%m/%Y')}.")
+else:
+    # --- 4. SECCIÓN DE TOTALES ---
+    st.subheader(f"💰 Totales del día")
+    
+    df_dia['monto'] = pd.to_numeric(df_dia['monto'])
+    ingresos = df_dia[df_dia['tipo'] == 'Ingreso']['monto'].sum()
+    egresos = df_dia[df_dia['tipo'] == 'Egreso']['monto'].sum()
     
     c1, c2, c3 = st.columns(3)
-    c1.metric("Ingresos", f"$ {ing:,.2f}")
-    c2.metric("Egresos", f"$ {egr:,.2f}")
-    c3.metric("Saldo", f"$ {ing - egr:,.2f}")
+    c1.metric("Ingresos", f"$ {ingresos:,.2f}")
+    c2.metric("Egresos", f"$ {egresos:,.2f}", delta_color="inverse")
+    c3.metric("Saldo Neto", f"$ {ingresos - egresos:,.2f}")
 
-    # Totales por Medio
-    st.write("**Por medio de pago:**")
-    resumen = df.groupby('medio').apply(lambda x: x[x['tipo']=='Ingreso']['monto'].sum() - x[x['tipo']=='Egreso']['monto'].sum())
-    st.dataframe(resumen, use_container_width=True)
+    # Totales por Medio de Pago
+    st.write("**Detalle por Medio de Pago (Neto):**")
+    # Agrupamos y restamos egresos de ingresos por cada medio
+    resumen_medios = df_dia.groupby('medio').apply(
+        lambda x: x[x['tipo'] == 'Ingreso']['monto'].sum() - x[x['tipo'] == 'Egreso']['monto'].sum()
+    )
+    
+    cols = st.columns(len(resumen_medios))
+    for i, (medio, total) in enumerate(resumen_medios.items()):
+        cols[i].info(f"**{medio}**\n\n$ {total:,.2f}")
 
-    # Edición
-    st.write("📝 **Para borrar:** Seleccioná la fila desde la izquierda y apretá 'Suprimir' (Delete).")
+    st.write("---")
 
-    editado = st.data_editor(
-        df, 
-        hide_index=True, 
-        num_rows="fixed", # Bloquea el botón (+) para no agregar registros
-        disabled=["id", "fecha"], # Bloquea edición de ID y Fecha
+    # --- 5. TABLA DE EDICIÓN Y BORRADO ---
+    st.write("📝 **Editar o marcar para eliminar:**")
+    
+    # Preparamos el DF con la columna de borrar
+    df_para_editar = df_dia.copy()
+    df_para_editar.insert(0, "Eliminar", False)
+
+    df_editado = st.data_editor(
+        df_para_editar,
+        hide_index=True,
+        num_rows="fixed", # Bloquea agregar filas nuevas
+        disabled=["id", "fecha"], # Bloquea cambios en ID y Fecha
         use_container_width=True,
-        key="editor_consulta",
         column_config={
+            "Eliminar": st.column_config.CheckboxColumn("🗑️", help="Tildá para borrar esta fila"),
             "id": st.column_config.TextColumn("ID"),
             "fecha": st.column_config.DateColumn("Fecha", format="DD/MM/YYYY"),
-            "codigo": st.column_config.TextColumn("Código"), # Agregamos el código aquí también
+            "codigo": st.column_config.TextColumn("Código"),
             "monto": st.column_config.NumberColumn("Monto", format="$ %.2f"),
             "tipo": st.column_config.SelectboxColumn("Tipo", options=["Ingreso", "Egreso"]),
             "medio": st.column_config.SelectboxColumn("Medio", options=["Efectivo", "Transferencia", "Tarjeta", "Echeq"])
         }
     )
 
-# --- LÓGICA DE GUARDADO (BORRADO + EDICIÓN) ---
-if st.button("💾 Guardar Cambios"):
-    try:
-        # 1. Identificar filas borradas
-        # Comparamos los IDs originales contra los que quedaron en el editor
-        ids_originales = set(df["id"].tolist())
-        ids_actuales = set(editado["id"].tolist())
-        ids_a_eliminar = list(ids_originales - ids_actuales)
+    # --- 6. BOTÓN DE GUARDADO ---
+    if st.button("💾 Guardar Cambios", use_container_width=True):
+        try:
+            # Separamos los que se quedan de los que se van
+            ids_a_borrar = df_editado[df_editado["Eliminar"] == True]["id"].tolist()
+            filas_a_guardar = df_editado[df_editado["Eliminar"] == False].drop(columns=["Eliminar"])
 
-        # 2. Ejecutar borrado en Supabase
-        if ids_a_eliminar:
-            conn.table("movimientos").delete().in_("id", ids_a_eliminar).execute()
-            st.warning(f"Se eliminaron {len(ids_a_eliminar)} registros.")
+            # A. Borramos en Supabase
+            if ids_a_borrar:
+                conn.table("movimientos").delete().in_("id", ids_a_borrar).execute()
+            
+            # B. Actualizamos (Upsert)
+            datos_upsert = filas_a_guardar.to_dict(orient="records")
+            for d in datos_upsert:
+                d['fecha'] = str(d['fecha']) # Formato texto para DB
+            
+            conn.table("movimientos").upsert(datos_upsert).execute()
+            
+            st.success("¡Base de datos actualizada correctamente!")
+            st.rerun()
+            
+        except Exception as e:
+            st.error(f"Error al procesar: {e}")
 
-        # 3. Ejecutar actualización de los que quedaron (Upsert)
-        datos_actualizar = editado.to_dict(orient="records")
-        for d in datos_actualizar:
-            d['fecha'] = str(d['fecha']) # Asegurar formato fecha para Supabase
-        
-        conn.table("movimientos").upsert(datos_actualizar).execute()
-        
-        st.success("¡Cambios guardados con éxito!")
-        st.rerun()
-        
-    except Exception as e:
-        st.error(f"Error al procesar los cambios: {e}")
-else:
-    st.info("Sin movimientos hoy.")
-
-if st.sidebar.button("Cerrar Sesión"):
-    st.session_state["conectado"] = False
-    st.switch_page("app.py")
+# --- SIDEBAR ---
+with st.sidebar:
+    st.write(f"Usuario: **{st.session_state.get('user', 'Admin')}**")
+    if st.button("Cerrar Sesión"):
+        st.session_state["conectado"] = False
+        st.switch_page("app.py")
