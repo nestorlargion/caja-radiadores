@@ -60,7 +60,7 @@ with st.sidebar:
     nombre = st.session_state.get('nombre', 'Sin Nombre')
 
     # Mostramos el cuadro informativo
-    st.info(f"Usuario: **{rol.capitalize()}**: **{nombre}**")
+    st.info(f"👤 **{rol.capitalize()}**: **{nombre}**")
     if st.button("Cerrar Sesión"):
         st.session_state["conectado"] = False
         st.switch_page("app.py")        
