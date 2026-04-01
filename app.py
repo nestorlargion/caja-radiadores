@@ -23,9 +23,11 @@ if "conectado" in st.session_state and st.session_state["conectado"]:
 def validar_usuario(u, p):
     try:
         res = conn.table("usuarios").select("*").eq("usuario", u).eq("password", p).execute()
-        return len(res.data) > 0
+        if len(res.data) > 0:
+            return res.data[0] 
+        return None
     except:
-        return False
+        return None
 
 st.title("🚀 Sistema de Gestión")
 st.subheader("Venta de Radiadores")
@@ -34,9 +36,12 @@ with st.form("login_form"):
     u = st.text_input("Usuario")
     p = st.text_input("Contraseña", type="password")
     if st.form_submit_button("Entrar"):
-        if validar_usuario(u, p):
+        usuario_info = validar_usuario(u, p)
+        if usuario_info:
             st.session_state["conectado"] = True
-            st.session_state["user"] = u
+            st.session_state['user'] = usuario_info['usuario']
+            st.session_state['rol'] = usuario_info['rol']  # <--- AQUÍ SE GUARDA EL ROL
+            st.session_state['nombre'] = usuario_info['nombre']
             st.success("¡Ingreso exitoso!")
             st.switch_page("pages/1_Carga_de_Movimientos.py")
         else:

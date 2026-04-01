@@ -54,7 +54,13 @@ if st.button("🔍 Ir a Consulta de Hoy"):
 
 # --- SIDEBAR ---
 with st.sidebar:
-    st.info(f"Usuario: **{st.session_state.get('user', 'Admin')}**")
+
+    # Usamos .get() con valores por defecto para evitar errores si la sesión se reinicia
+    rol = st.session_state.get('rol', 'Sin Rol')
+    nombre = st.session_state.get('nombre', 'Sin Nombre')
+
+    # Mostramos el cuadro informativo
+    st.info(f"Usuario: **{rol.capitalize()}**: **{nombre}**")
     if st.button("Cerrar Sesión"):
         st.session_state["conectado"] = False
         st.switch_page("app.py")        
