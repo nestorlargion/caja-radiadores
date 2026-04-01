@@ -25,7 +25,7 @@ with st.form("form_carga_vertical", clear_on_submit=True):
     concepto = st.text_input("📋 Concepto / Descripción", placeholder="Ej: Radiador Toyota Corolla XLI")
     monto = st.number_input("💰 Monto ($)", min_value=0.0, step=100.0, format="%.2f")
     tipo = st.selectbox("↕️ Tipo de Movimiento", ["Ingreso", "Egreso"])
-    medio = st.selectbox("💳 Medio de Pago", ["Efectivo", "Transferencia", "Tarjeta", "Echeq"])
+    medio = st.selectbox("💳 Medio de Pago", ["Efectivo", "Transferencia", "Tarjeta", "Echeq", "CTE CTE", "Cheque"])
     
     st.write("---")
     btn_cargar = st.form_submit_button("🚀 Registrar en la Base de Datos", use_container_width=True)
