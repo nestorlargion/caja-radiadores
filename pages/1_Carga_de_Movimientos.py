@@ -50,7 +50,7 @@ with st.form("form_carga_vertical", clear_on_submit=True):
 
 # Botón rápido para ir a ver lo cargado
 if st.button("🔍 Ir a Consulta de Hoy"):
-    st.switch_page("pages/2_Consulta_Historial.py")
+    st.switch_page("pages/2_Consulta_Cajas.py")
 
 # --- SIDEBAR ---
 with st.sidebar:
