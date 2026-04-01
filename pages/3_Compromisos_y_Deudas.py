@@ -7,6 +7,14 @@ from datetime import datetime
 if "conectado" not in st.session_state or not st.session_state["conectado"]:
     st.switch_page("app.py")
 
+# Verificamos el rol guardado en el login (app.py)
+rol = st.session_state.get('rol', 'user')
+
+if rol != "administrador":
+    st.error("No tienes permisos para acceder a esta sección.")
+    st.info("Por favor, vuelve al inicio para cargar movimientos.")
+    st.stop() # Esto detiene la ejecución del resto de la página
+
 # --- 2. CONEXIÓN A SUPABASE ---
 try:
     conn = st.connection(
